@@ -46,13 +46,13 @@ def start():
         else:
             dt = datetime.now()
             ts = datetime.timestamp(dt)
-            filename = str(ts) + '.jpg'
+            full_filename = './temp/' + str(ts) + '.jpg'
 
-            await client.download_media(event.message, filename)
+            await client.download_media(event.message, full_filename)
 
             img_valid = False
             try:
-                img = Image.open(filename)
+                img = Image.open(full_filename)
                 img.verify()
 
                 img_valid = True
@@ -62,7 +62,7 @@ def start():
             if not img_valid:
                 return
 
-            message = {'type': 'image', 'filename': filename}
+            message = {'type': 'image', 'filename': full_filename}
 
         string_message = json.dumps(message)
         subprocess.call(["python3", "discord_messager.py", string_message])
