@@ -1,0 +1,11 @@
+*.pyc
+venv
+.vscode
+__pycache__
+*.exe
+config.yml
+*.session
+*.session-journal
+temp
+.env
+.idea
