@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 if not os.path.exists('./temp'):
     os.makedirs('./temp')
 
+known_content_types = ['image/webp', 'video/mp4']
+
 
 def start():
     client = TelegramClient(os.getenv('SESSION_NAME'),
@@ -44,23 +46,39 @@ def start():
         if event.media is None:
             message = {'type': 'text', 'content': event.message.message}
         else:
+            if not hasattr(event.media, 'document'):
+                content_type = 'image/webp'
+            else:
+                content_type = event.media.document.mime_type
+
+            if content_type not in known_content_types:
+                return
+
+            file_extension = '.jpg'
+
+            if content_type == 'video/mp4':
+                file_extension = '.mp4'
+
             dt = datetime.now()
             ts = datetime.timestamp(dt)
-            full_filename = './temp/' + str(ts) + '.jpg'
+            full_filename = './temp/' + str(ts) + file_extension
 
             await client.download_media(event.message, full_filename)
 
-            img_valid = False
-            try:
-                img = Image.open(full_filename)
-                img.verify()
+            if content_type == 'image/webp':
+                img_valid = False
+                try:
+                    img = Image.open(full_filename)
+                    img.verify()
 
-                img_valid = True
-            except Exception:
-                pass
+                    img_valid = True
+                except Exception:
+                    pass
 
-            if not img_valid:
-                return
+                if not img_valid:
+                    logger.error(f"Image is not valid!")
+
+                    return
 
             message = {'type': 'image', 'filename': full_filename}
 
